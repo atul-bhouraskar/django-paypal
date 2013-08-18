@@ -6,3 +6,5 @@
 /build
 /django_paypal.egg-info
 *.swp
+*.kate-swp
+*.py~

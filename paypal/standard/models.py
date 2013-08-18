@@ -202,6 +202,8 @@ class PayPalStandardBase(Model):
     def __unicode__(self):
         if self.is_transaction():
             return self.format % ("Transaction", self.txn_id)
+        elif self.is_subscription():
+            return self.format % ("Subscription", self.subscr_id)
         else:
             return self.format % ("Recurring", self.recurring_payment_id)
 
@@ -217,6 +219,9 @@ class PayPalStandardBase(Model):
     def is_recurring(self):
         return len(self.recurring_payment_id) > 0
 
+    def is_subscription(self):
+        return len(self.subscr_id) > 0
+
     def is_subscription_cancellation(self):
         return self.txn_type == "subscr_cancel"
 
@@ -228,6 +233,12 @@ class PayPalStandardBase(Model):
 
     def is_subscription_signup(self):
         return self.txn_type == "subscr_signup"
+
+    def is_subscription_payment(self):
+        return self.txn_type == "subscr_payment"
+
+    def is_subscription_failed(self):
+        return self.txn_type == "subscr_failed"
 
     def is_recurring_create(self):
         return self.txn_type == "recurring_payment_profile_created"
@@ -311,7 +322,7 @@ class PayPalStandardBase(Model):
             else:
                 payment_was_successful.send(sender=self)
         # Subscription signals:
-        else:
+        if self.is_subscription():
             if self.is_subscription_cancellation():
                 subscription_cancel.send(sender=self)
             elif self.is_subscription_signup():

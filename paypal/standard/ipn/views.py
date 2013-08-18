@@ -5,8 +5,8 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from paypal.standard.ipn.forms import PayPalIPNForm
 from paypal.standard.ipn.models import PayPalIPN
- 
- 
+
+
 @require_POST
 @csrf_exempt
 def ipn(request, item_check_callable=None):
@@ -14,7 +14,7 @@ def ipn(request, item_check_callable=None):
     PayPal IPN endpoint (notify_url).
     Used by both PayPal Payments Pro and Payments Standard to confirm transactions.
     http://tinyurl.com/d9vu9d
-    
+
     PayPal IPN Simulator:
     https://developer.paypal.com/cgi-bin/devscr?cmd=_ipn-link-session
     """
@@ -22,7 +22,7 @@ def ipn(request, item_check_callable=None):
     #      of if checks just to determine if flag is set.
     flag = None
     ipn_obj = None
-    
+
     # Clean up the data as PayPal sends some weird values such as "N/A"
     data = request.POST.copy()
     date_fields = ('time_created', 'payment_date', 'next_payment_date',
@@ -40,10 +40,10 @@ def ipn(request, item_check_callable=None):
             flag = "Exception while processing. (%s)" % e
     else:
         flag = "Invalid form. (%s)" % form.errors
- 
+
     if ipn_obj is None:
         ipn_obj = PayPalIPN()
-    
+
     #Set query params and sender's IP address
     ipn_obj.initialize(request)
 

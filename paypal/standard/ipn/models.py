@@ -56,3 +56,7 @@ class PayPalIPN(PayPalStandardBase):
                 subscription_eot.send(sender=self)
             elif self.is_subscription_modified():
                 subscription_modify.send(sender=self)
+            elif self.is_subscription_payment():
+                subscription_payment.send(sender=self)
+            elif self.is_subscription_failed():
+                subscription_failed.send(sender=self)

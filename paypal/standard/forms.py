@@ -5,7 +5,7 @@ from django.conf import settings
 from django.utils.safestring import mark_safe
 from paypal.standard.conf import *
 from paypal.standard.widgets import ValueHiddenInput, ReservedValueHiddenInput
-from paypal.standard.conf import (POSTBACK_ENDPOINT, SANDBOX_POSTBACK_ENDPOINT, 
+from paypal.standard.conf import (POSTBACK_ENDPOINT, SANDBOX_POSTBACK_ENDPOINT,
     RECEIVER_EMAIL)
 
 
@@ -21,29 +21,29 @@ class PayPalPaymentsForm(forms.Form):
     """
     Creates a PayPal Payments Standard "Buy It Now" button, configured for a
     selling a single item with no shipping.
-    
+
     For a full overview of all the fields you can set (there is a lot!) see:
     http://tinyurl.com/pps-integration
-    
+
     Usage:
     >>> f = PayPalPaymentsForm(initial={'item_name':'Widget 001', ...})
     >>> f.render()
     u'<form action="https://www.paypal.com/cgi-bin/webscr" method="post"> ...'
-    
-    """    
+
+    """
     CMD_CHOICES = (
-        ("_xclick", "Buy now or Donations"), 
-        ("_cart", "Shopping cart"), 
+        ("_xclick", "Buy now or Donations"),
+        ("_cart", "Shopping cart"),
         ("_xclick-subscriptions", "Subscribe")
     )
     SHIPPING_CHOICES = ((1, "No shipping"), (0, "Shipping"))
     NO_NOTE_CHOICES = ((1, "No Note"), (0, "Include Note"))
     RECURRING_PAYMENT_CHOICES = (
-        (1, "Subscription Payments Recur"), 
+        (1, "Subscription Payments Recur"),
         (0, "Subscription payments do not recur")
     )
     REATTEMPT_ON_FAIL_CHOICES = (
-        (1, "reattempt billing on Failure"), 
+        (1, "reattempt billing on Failure"),
         (0, "Do Not reattempt on failure")
     )
 
@@ -53,46 +53,47 @@ class PayPalPaymentsForm(forms.Form):
 
     # Where the money goes.
     business = forms.CharField(widget=ValueHiddenInput(), initial=RECEIVER_EMAIL)
-    
+
     # Item information.
     amount = forms.IntegerField(widget=ValueHiddenInput())
     item_name = forms.CharField(widget=ValueHiddenInput())
     item_number = forms.CharField(widget=ValueHiddenInput())
     quantity = forms.CharField(widget=ValueHiddenInput())
-    
+
     # Subscription Related.
     a1 = forms.CharField(widget=ValueHiddenInput())  # Trial 1 Price
     p1 = forms.CharField(widget=ValueHiddenInput())  # Trial 1 Duration
     t1 = forms.CharField(widget=ValueHiddenInput())  # Trial 1 unit of Duration, default to Month
     a2 = forms.CharField(widget=ValueHiddenInput())  # Trial 2 Price
     p2 = forms.CharField(widget=ValueHiddenInput())  # Trial 2 Duration
-    t2 = forms.CharField(widget=ValueHiddenInput())  # Trial 2 unit of Duration, default to Month    
+    t2 = forms.CharField(widget=ValueHiddenInput())  # Trial 2 unit of Duration, default to Month
     a3 = forms.CharField(widget=ValueHiddenInput())  # Subscription Price
     p3 = forms.CharField(widget=ValueHiddenInput())  # Subscription Duration
     t3 = forms.CharField(widget=ValueHiddenInput())  # Subscription unit of Duration, default to Month
     src = forms.CharField(widget=ValueHiddenInput()) # Is billing recurring? default to yes
     sra = forms.CharField(widget=ValueHiddenInput()) # Reattempt billing on failed cc transaction
-    no_note = forms.CharField(widget=ValueHiddenInput())    
+    srt = forms.CharField(widget=ValueHiddenInput()) # Recurring Times. This is the number of payments which will occur at the regular rate.
+    no_note = forms.CharField(widget=ValueHiddenInput())
     # Can be either 1 or 2. 1 = modify or allow new subscription creation, 2 = modify only
     modify = forms.IntegerField(widget=ValueHiddenInput()) # Are we modifying an existing subscription?
-    
+
     # Localization / PayPal Setup
     lc = forms.CharField(widget=ValueHiddenInput())
     page_style = forms.CharField(widget=ValueHiddenInput())
     cbt = forms.CharField(widget=ValueHiddenInput())
-    
+
     # IPN control.
     notify_url = forms.CharField(widget=ValueHiddenInput())
     cancel_return = forms.CharField(widget=ValueHiddenInput())
     return_url = forms.CharField(widget=ReservedValueHiddenInput(attrs={"name":"return"}))
     custom = forms.CharField(widget=ValueHiddenInput())
     invoice = forms.CharField(widget=ValueHiddenInput())
-    
+
     # Default fields.
     cmd = forms.ChoiceField(widget=forms.HiddenInput(), initial=CMD_CHOICES[0][0])
     charset = forms.CharField(widget=forms.HiddenInput(), initial="utf-8")
     currency_code = forms.CharField(widget=forms.HiddenInput(), initial="USD")
-    no_shipping = forms.ChoiceField(widget=forms.HiddenInput(), choices=SHIPPING_CHOICES, 
+    no_shipping = forms.ChoiceField(widget=forms.HiddenInput(), choices=SHIPPING_CHOICES,
         initial=SHIPPING_CHOICES[0][0])
 
     def __init__(self, button_type="buy", *args, **kwargs):
@@ -104,14 +105,14 @@ class PayPalPaymentsForm(forms.Form):
     %s
     <input type="image" src="%s" border="0" name="submit" alt="Buy it Now" />
 </form>""" % (POSTBACK_ENDPOINT, self.as_p(), self.get_image()))
-        
-        
+
+
     def sandbox(self):
         return mark_safe(u"""<form action="%s" method="post">
     %s
     <input type="image" src="%s" border="0" name="submit" alt="Buy it Now" />
 </form>""" % (SANDBOX_POSTBACK_ENDPOINT, self.as_p(), self.get_image()))
-        
+
     def get_image(self):
         return {
             (True, self.SUBSCRIBE): SUBSCRIPTION_SANDBOX_IMAGE,
@@ -139,7 +140,7 @@ class PayPalEncryptedPaymentsForm(PayPalPaymentsForm):
 
     Based on example at:
     http://blog.mauveweb.co.uk/2007/10/10/paypal-with-django/
-    
+
     """
     def _encrypt(self):
         """Use your key thing to encrypt things."""
@@ -164,7 +165,7 @@ class PayPalEncryptedPaymentsForm(PayPalPaymentsForm):
                     name = "return"
                 plaintext += u'%s=%s\n' % (name, value)
         plaintext = plaintext.encode('utf-8')
-        
+
         # Begin crypto weirdness.
         s = SMIME.SMIME()
         s.load_key_bio(BIO.openfile(CERT), BIO.openfile(PUB_CERT))
@@ -180,7 +181,7 @@ class PayPalEncryptedPaymentsForm(PayPalPaymentsForm):
         out = BIO.MemoryBuffer()
         p7.write(out)
         return out.read()
-    
+
     def as_p(self):
         return mark_safe(u"""
 <input type="hidden" name="cmd" value="_s-xclick" />
@@ -192,7 +193,7 @@ class PayPalSharedSecretEncryptedPaymentsForm(PayPalEncryptedPaymentsForm):
     """
     Creates a PayPal Encrypted Payments "Buy It Now" button with a Shared Secret.
     Shared secrets should only be used when your IPN endpoint is on HTTPS.
-    
+
     Adds a secret to the notify_url based on the contents of the form.
 
     """
