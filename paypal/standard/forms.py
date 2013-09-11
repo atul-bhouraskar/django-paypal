@@ -15,7 +15,8 @@ from paypal.standard.conf import (POSTBACK_ENDPOINT, SANDBOX_POSTBACK_ENDPOINT,
 PAYPAL_DATE_FORMAT = ("%H:%M:%S %b. %d, %Y PST",
                       "%H:%M:%S %b. %d, %Y PDT",
                       "%H:%M:%S %b %d, %Y PST",
-                      "%H:%M:%S %b %d, %Y PDT",)
+                      "%H:%M:%S %b %d, %Y PDT",
+                      "%H:%M:%S %d %b %Y PDT",)
 
 class PayPalPaymentsForm(forms.Form):
     """
@@ -218,3 +219,5 @@ class PayPalStandardBaseForm(forms.ModelForm):
     next_payment_date = forms.DateTimeField(required=False, input_formats=PAYPAL_DATE_FORMAT)
     subscr_date = forms.DateTimeField(required=False, input_formats=PAYPAL_DATE_FORMAT)
     subscr_effective = forms.DateTimeField(required=False, input_formats=PAYPAL_DATE_FORMAT)
+    retry_at = forms.DateTimeField(required=False, input_formats=PAYPAL_DATE_FORMAT)
+    case_creation_date = forms.DateTimeField(required=False, input_formats=PAYPAL_DATE_FORMAT)
