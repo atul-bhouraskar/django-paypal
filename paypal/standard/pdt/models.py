@@ -75,6 +75,15 @@ class PayPalPDT(PayPalStandardBase):
                         response_dict[k.strip()] = v.strip()
                 except ValueError, e:
                     pass
+                    
+        # ensure that we decode the strings as per the encoding passed in via the
+        # charset parameter
+        try:
+            charset = response_dict['charset']
+            for key, value in response_dict.items():
+                response_dict[key] = value.decode(charset)
+        except (KeyError, LookupError):
+            pass
 
         qd = QueryDict('', mutable=True)
         qd.update(response_dict)
