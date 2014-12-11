@@ -143,6 +143,10 @@ class PayPalEncryptedPaymentsForm(PayPalPaymentsForm):
     http://blog.mauveweb.co.uk/2007/10/10/paypal-with-django/
 
     """
+    def __init__(self, *args, **kwargs):
+        self.cert_id = kwargs.pop('cert_id', None) or settings.PAYPAL_CERT_ID
+        super(PayPalEncryptedPaymentsForm, self).__init__(*args, **kwargs)
+
     def _encrypt(self):
         """Use your key thing to encrypt things."""
         from M2Crypto import BIO, SMIME, X509
@@ -150,7 +154,7 @@ class PayPalEncryptedPaymentsForm(PayPalPaymentsForm):
         CERT = settings.PAYPAL_PRIVATE_CERT
         PUB_CERT = settings.PAYPAL_PUBLIC_CERT
         PAYPAL_CERT = settings.PAYPAL_CERT
-        CERT_ID = settings.PAYPAL_CERT_ID
+        CERT_ID = self.cert_id
 
         # Iterate through the fields and pull out the ones that have a value.
         plaintext = 'cert_id=%s\n' % CERT_ID
