@@ -30,6 +30,7 @@ class PayPalPDT(PayPalStandardBase):
     sig = models.CharField(max_length=255, blank=True)
     tx = models.CharField(max_length=255, blank=True)
     st = models.CharField(max_length=32, blank=True)
+    identity_token = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         db_table = "paypal_pdt"
@@ -42,7 +43,9 @@ class PayPalPDT(PayPalStandardBase):
         SUCCESS or FAILED.
 
         """
-        postback_dict = dict(cmd="_notify-synch", at=IDENTITY_TOKEN, tx=self.tx)
+        postback_dict = dict(cmd="_notify-synch",
+                             at=self.identity_token or IDENTITY_TOKEN,
+                             tx=self.tx)
         postback_params = urlencode(postback_dict)
         return urllib2.urlopen(self.get_endpoint(), postback_params).read()
 
