@@ -18,7 +18,7 @@ def pdt(request, item_check_callable=None, template="pdt/pdt.html", context=None
     context.update({"failed":failed, "pdt_obj":pdt_obj})
     return render_to_response(template, context, RequestContext(request))
 
-def process_pdt(request, item_check_callable=None):
+def process_pdt(request, item_check_callable=None, identity_token=None):
     """
     Payment data transfer implementation: http://tinyurl.com/c9jjmw
     This function returns a tuple of pdt_obj and failed
@@ -42,6 +42,7 @@ def process_pdt(request, item_check_callable=None):
             if form.is_valid():
                 try:
                     pdt_obj = form.save(commit=False)
+                    pdt_obj.identity_token = identity_token
                 except Exception, e:
                     error = repr(e)
                     failed = True
@@ -50,7 +51,7 @@ def process_pdt(request, item_check_callable=None):
                 failed = True
 
             if failed:
-                pdt_obj = PayPalPDT()
+                pdt_obj = PayPalPDT(identity_token=identity_token)
                 pdt_obj.set_flag("Invalid form. %s" % error)
 
             pdt_obj.initialize(request)
