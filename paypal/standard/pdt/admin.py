@@ -10,7 +10,10 @@ class PayPalPDTAdmin(admin.ModelAdmin):
     date_hierarchy = 'payment_date'
     fieldsets = (
         (None, {
-            "fields": L("flag txn_id txn_type payment_status payment_date transaction_entity reason_code pending_reason mc_gross mc_fee auth_status auth_amount auth_exp auth_id")
+            "fields": L("flag txn_id tx txn_type payment_status payment_date "
+                        "transaction_entity reason_code pending_reason "
+                        "mc_gross mc_fee auth_status auth_amount auth_exp "
+                        "auth_id")
         }),
         ("Address", {
             "description": "The address of the Buyer.",
