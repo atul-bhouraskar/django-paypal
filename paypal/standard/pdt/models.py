@@ -36,6 +36,11 @@ class PayPalPDT(PayPalStandardBase):
         db_table = "paypal_pdt"
         verbose_name = "PayPal PDT"
 
+    def __unicode__(self):
+        if self.flag:
+            return self.format % ('Failed', self.tx)
+        return super(PayPalPDT, self).__unicode__()
+
     def _postback(self):
         """
         Perform PayPal PDT Postback validation.
@@ -88,11 +93,17 @@ class PayPalPDT(PayPalStandardBase):
         except (KeyError, LookupError):
             pass
 
-        qd = QueryDict('', mutable=True)
-        qd.update(response_dict)
-        qd.update(dict(ipaddress=self.ipaddress, st=self.st, flag_info=self.flag_info,flag=self.flag,flag_code=self.flag_code))
-        pdt_form = PayPalPDTForm(qd, instance=self)
-        pdt_form.save(commit=False)
+        if response_dict:
+            qd = QueryDict('', mutable=True)
+            qd.update(response_dict)
+            qd.update(dict(ipaddress=self.ipaddress,
+                           st=self.st,
+                           flag_info=self.flag_info,
+                           flag=self.flag,
+                           flag_code=self.flag_code,
+                           query=self.query))
+            pdt_form = PayPalPDTForm(qd, instance=self)
+            pdt_form.save(commit=False)
 
     def send_signals(self):
         # Send the PDT signals...
