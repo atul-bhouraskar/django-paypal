@@ -225,3 +225,6 @@ class PayPalStandardBaseForm(forms.ModelForm):
     subscr_effective = forms.DateTimeField(required=False, input_formats=PAYPAL_DATE_FORMAT)
     retry_at = forms.DateTimeField(required=False, input_formats=PAYPAL_DATE_FORMAT)
     case_creation_date = forms.DateTimeField(required=False, input_formats=PAYPAL_DATE_FORMAT)
+    # The IP address isn't filled in by Paypal it is filled in after validation
+    # make it non-required
+    ipaddress = forms.GenericIPAddressField(required=False)
