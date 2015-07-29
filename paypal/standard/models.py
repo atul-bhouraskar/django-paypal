@@ -204,11 +204,15 @@ class PayPalStandardBase(Model):
             return self.format % ("Transaction", self.txn_id)
         elif self.is_subscription():
             return self.format % ("Subscription", self.subscr_id)
-        else:
+        elif self.is_recurring():
             return self.format % ("Recurring", self.recurring_payment_id)
+        elif self.flag:
+            return self.format % ('Failed', self.txn_id)
+        else:
+            return self.format % ('Unknown', self.txn_id)
 
     def is_transaction(self):
-        return len(self.txn_id) > 0
+        return bool(self.txn_id)
 
     def is_refund(self):
         return self.payment_status == ST_PP_REFUNDED
@@ -217,10 +221,10 @@ class PayPalStandardBase(Model):
         return self.payment_status == ST_PP_REVERSED
 
     def is_recurring(self):
-        return len(self.recurring_payment_id) > 0
+        return bool(self.recurring_payment_id)
 
     def is_subscription(self):
-        return len(self.subscr_id) > 0
+        return bool(self.subscr_id)
 
     def is_subscription_cancellation(self):
         return self.txn_type == "subscr_cancel"
