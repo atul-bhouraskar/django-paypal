@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.views.decorators.http import require_GET
 from paypal.standard.pdt.models import PayPalPDT
 from paypal.standard.pdt.forms import PayPalPDTForm
+
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 @require_GET
@@ -18,7 +23,9 @@ def pdt(request, item_check_callable=None, template="pdt/pdt.html", context=None
     context.update({"failed":failed, "pdt_obj":pdt_obj})
     return render_to_response(template, context, RequestContext(request))
 
-def process_pdt(request, item_check_callable=None, identity_token=None):
+
+def process_pdt(request, item_check_callable=None,
+                identity_token=None):
     """
     Payment data transfer implementation: http://tinyurl.com/c9jjmw
     This function returns a tuple of pdt_obj and failed
@@ -29,6 +36,9 @@ def process_pdt(request, item_check_callable=None, identity_token=None):
     pdt_obj = None
     txn_id = request.GET.get('tx')
     failed = False
+    error = ''
+    if not identity_token:
+        identity_token = settings.PAYPAL_IDENTITY_TOKEN
     if txn_id is not None:
         # If an existing transaction with the id tx exists: use it
         try:
@@ -44,6 +54,7 @@ def process_pdt(request, item_check_callable=None, identity_token=None):
                     pdt_obj = form.save(commit=False)
                     pdt_obj.identity_token = identity_token
                 except Exception, e:
+                    logger.exception('Saving pdt_obj')
                     error = repr(e)
                     failed = True
             else:
@@ -60,7 +71,7 @@ def process_pdt(request, item_check_callable=None, identity_token=None):
                 # The PDT object gets saved during verify
                 pdt_obj.verify(item_check_callable)
     else:
-        pass # we ignore any PDT requests that don't have a transaction id
+        pass  # we ignore any PDT requests that don't have a transaction id
 
-    return (pdt_obj, failed)
+    return pdt_obj, failed
 
