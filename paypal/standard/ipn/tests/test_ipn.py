@@ -146,13 +146,14 @@ class IPNTest(TestCase):
         self.assertEqual(ipn_obj.flag, True)
         self.assertEqual(ipn_obj.flag_info, flag_info)
 
-    def test_incorrect_receiver_email(self):
-        update = {
-            'receiver_email': 'incorrect_email@someotherbusiness.com'
-        }
-        flag_info = \
-            'Invalid receiver_email. (incorrect_email@someotherbusiness.com)'
-        self.assertFlagged(update, flag_info)
+    # Code commented out in PayPalStandardBase.verify() test commented out too.
+    # def test_incorrect_receiver_email(self):
+    #     update = {
+    #         'receiver_email': 'incorrect_email@someotherbusiness.com'
+    #     }
+    #     flag_info = \
+    #         'Invalid receiver_email. (incorrect_email@someotherbusiness.com)'
+    #     self.assertFlagged(update, flag_info)
 
     def test_invalid_payment_status(self):
         update = {'payment_status': 'Failure'}
