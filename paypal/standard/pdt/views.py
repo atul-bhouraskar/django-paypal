@@ -53,7 +53,7 @@ def process_pdt(request, item_check_callable=None,
                 try:
                     pdt_obj = form.save(commit=False)
                     pdt_obj.identity_token = identity_token
-                except Exception, e:
+                except Exception as e:
                     logger.exception('Saving pdt_obj')
                     error = repr(e)
                     failed = True

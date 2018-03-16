@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from urllib import unquote_plus
-import urllib2
+from six.moves.urllib.parse import unquote_plus
+from six.moves.urllib.request import urlopen
 from django.db import models
 from django.conf import settings
 from django.http import QueryDict
@@ -52,7 +52,7 @@ class PayPalPDT(PayPalStandardBase):
                              at=self.identity_token or IDENTITY_TOKEN,
                              tx=self.tx)
         postback_params = urlencode(postback_dict)
-        return urllib2.urlopen(self.get_endpoint(), postback_params).read()
+        return urlopen(self.get_endpoint(), postback_params).read()
 
     def get_endpoint(self):
         """Use the sandbox when in DEBUG mode as we don't have a test_ipn variable in pdt."""
@@ -81,7 +81,7 @@ class PayPalPDT(PayPalStandardBase):
                     if not unquoted_line.startswith(' -'):
                         k, v = unquoted_line.split('=')
                         response_dict[k.strip()] = v.strip()
-                except ValueError, e:
+                except ValueError:
                     pass
                     
         # ensure that we decode the strings as per the encoding passed in via the

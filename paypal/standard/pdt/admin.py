@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from string import split as L
 from django.contrib import admin
 from paypal.standard.pdt.models import PayPalPDT
+
+
+def L(s):
+    return s.split()
 
 
 # ToDo: How similiar is this to PayPalIPNAdmin? Could we just inherit off one common admin model?
