@@ -191,7 +191,7 @@ class PayPalEncryptedPaymentsForm(PayPalPaymentsForm):
         return mark_safe(u"""
 <input type="hidden" name="cmd" value="_s-xclick" />
 <input type="hidden" name="encrypted" value="%s" />
-        """ % self._encrypt())
+        """ % self._encrypt().decode())
 
 
 class PayPalSharedSecretEncryptedPaymentsForm(PayPalEncryptedPaymentsForm):
