@@ -52,7 +52,11 @@ class PayPalPDT(PayPalStandardBase):
                              at=self.identity_token or IDENTITY_TOKEN,
                              tx=self.tx)
         postback_params = urlencode(postback_dict)
-        return urlopen(self.get_endpoint(), postback_params).read()
+        # Bug 4692 - urlopen in py3 expects and returns bytes
+        return urlopen(
+            self.get_endpoint(),
+            postback_params.encode()
+        ).read().decode()
 
     def get_endpoint(self):
         """Use the sandbox when in DEBUG mode as we don't have a test_ipn variable in pdt."""
@@ -83,15 +87,18 @@ class PayPalPDT(PayPalStandardBase):
                         response_dict[k.strip()] = v.strip()
                 except ValueError:
                     pass
-                    
+
+        # Bug 4692 - response is aleady decoded above
+        #          - this does not appear to be required any more
+        #
         # ensure that we decode the strings as per the encoding passed in via the
         # charset parameter
-        try:
-            charset = response_dict['charset']
-            for key, value in response_dict.items():
-                response_dict[key] = value.decode(charset)
-        except (KeyError, LookupError):
-            pass
+        # try:
+        #     charset = response_dict['charset']
+        #     for key, value in response_dict.items():
+        #         response_dict[key] = value.decode(charset)
+        # except (KeyError, LookupError):
+        #     pass
 
         if response_dict:
             qd = QueryDict('', mutable=True)
