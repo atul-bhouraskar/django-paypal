@@ -171,21 +171,24 @@ class PayPalEncryptedPaymentsForm(PayPalPaymentsForm):
                 plaintext += u'%s=%s\n' % (name, value)
         plaintext = plaintext.encode('utf-8')
 
-        # Begin crypto weirdness.
-        s = SMIME.SMIME()
-        s.load_key_bio(BIO.openfile(CERT), BIO.openfile(PUB_CERT))
-        p7 = s.sign(BIO.MemoryBuffer(plaintext), flags=SMIME.PKCS7_BINARY)
-        x509 = X509.load_cert_bio(BIO.openfile(settings.PAYPAL_CERT))
-        sk = X509.X509_Stack()
-        sk.push(x509)
-        s.set_x509_stack(sk)
-        s.set_cipher(SMIME.Cipher('des_ede3_cbc'))
-        tmp = BIO.MemoryBuffer()
-        p7.write_der(tmp)
-        p7 = s.encrypt(tmp, flags=SMIME.PKCS7_BINARY)
-        out = BIO.MemoryBuffer()
-        p7.write(out)
-        return out.read()
+        with BIO.openfile(CERT) as cert_f, \
+                BIO.openfile(PUB_CERT) as pub_cert_f, \
+                BIO.openfile(settings.PAYPAL_CERT) as pp_cert_f:
+            # Begin crypto weirdness.
+            s = SMIME.SMIME()
+            s.load_key_bio(cert_f, pub_cert_f)
+            p7 = s.sign(BIO.MemoryBuffer(plaintext), flags=SMIME.PKCS7_BINARY)
+            x509 = X509.load_cert_bio(pp_cert_f)
+            sk = X509.X509_Stack()
+            sk.push(x509)
+            s.set_x509_stack(sk)
+            s.set_cipher(SMIME.Cipher('des_ede3_cbc'))
+            tmp = BIO.MemoryBuffer()
+            p7.write_der(tmp)
+            p7 = s.encrypt(tmp, flags=SMIME.PKCS7_BINARY)
+            out = BIO.MemoryBuffer()
+            p7.write(out)
+            return out.read()
 
     def as_p(self):
         return mark_safe(u"""
